@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/kahnwong/repo-switcher/cmd"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	if err := cmd.RootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
