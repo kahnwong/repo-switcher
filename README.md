@@ -5,8 +5,17 @@ fisher's `z` works, but I use multiple machines which means the cache are not th
 
 ## Usage
 
+For fish shell.
+
 ```text
-function repo-switcher
+if type -q repo-switcher
+    repo-switcher completion fish | source
+
+    # wrap the completions so 'r' behaves like 'repo-switcher'
+    complete -c r -w repo-switcher
+end
+
+function r
     set path (command repo-switcher $argv)
     if test $status -eq 0
         cd $path
