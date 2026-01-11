@@ -5,7 +5,15 @@ fisher's `z` works, but I use multiple machines which means the cache are not th
 
 ## Usage
 
-For fish shell.
+Create config at `~/.config/repo-switcher/config.yaml`
+
+```yaml
+paths:
+  - ~/Git
+  - /your/other/git/dir
+```
+
+Shell config (fish):
 
 ```text
 if type -q repo-switcher

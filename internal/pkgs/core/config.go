@@ -1,16 +1,26 @@
 package core
 
-import "path/filepath"
+import (
+	"path/filepath"
+
+	"fmt"
+
+	"github.com/rs/zerolog/log"
+
+	cliBase "github.com/kahnwong/cli-base"
+)
+
+type Config struct {
+	Paths []string `yaml:"paths"`
+}
+
+var AppConfigBasePath = cliBase.ExpandHome("~/.config/repo-switcher")
+var AppConfig = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath)) // init
 
 var ReposMap map[string]string
 var ReposName []string
 
-func createGitFolderMap() map[string]string {
-	repos, err := listGitRepos()
-	if err != nil {
-		return map[string]string{}
-	}
-
+func createGitFolderMap(repos []string) map[string]string {
 	folderMap := make(map[string]string)
 	for _, repo := range repos {
 		folderName := filepath.Base(repo)
@@ -28,6 +38,11 @@ func getReposName(reposMap map[string]string) []string {
 }
 
 func init() {
-	ReposMap = createGitFolderMap()
+	repos, err := listGitRepos(AppConfig.Paths)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to list git repos")
+	}
+
+	ReposMap = createGitFolderMap(repos)
 	ReposName = getReposName(ReposMap)
 }
