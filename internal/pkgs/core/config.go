@@ -1,14 +1,22 @@
 package core
 
 import (
+	"os"
 	"path/filepath"
 
 	"fmt"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	cliBase "github.com/kahnwong/cli-base"
 )
+
+func init() {
+	// Set log level to info before any logging occurs
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+}
 
 type Config struct {
 	Paths []string `yaml:"paths"`
@@ -38,11 +46,23 @@ func getReposName(reposMap map[string]string) []string {
 }
 
 func init() {
-	repos, err := listGitRepos(AppConfig.Paths)
+	repos, err := listGitReposWithCache(AppConfig.Paths, false)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to list git repos")
 	}
 
 	ReposMap = createGitFolderMap(repos)
 	ReposName = getReposName(ReposMap)
+}
+
+// RefreshCache forces a refresh of the repository cache
+func RefreshCache() error {
+	repos, err := listGitReposWithCache(AppConfig.Paths, true)
+	if err != nil {
+		return err
+	}
+
+	ReposMap = createGitFolderMap(repos)
+	ReposName = getReposName(ReposMap)
+	return nil
 }
