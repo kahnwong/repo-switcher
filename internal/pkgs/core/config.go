@@ -1,7 +1,6 @@
 package core
 
 import (
-	"os"
 	"path/filepath"
 
 	"fmt"
@@ -15,15 +14,30 @@ import (
 func init() {
 	// Set log level to info before any logging occurs
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	// Initialize config path
+	var err error
+	AppConfigBasePath, err = cliBase.ExpandHome("~/.config/repo-switcher")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to expand config path")
+	}
+
+	// Initialize cache file path
+	cacheFilePath = filepath.Join(AppConfigBasePath, cacheFileName)
+
+	// Read config file
+	AppConfig, err = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath))
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to read config file")
+	}
 }
 
 type Config struct {
 	Paths []string `yaml:"paths"`
 }
 
-var AppConfigBasePath = cliBase.ExpandHome("~/.config/repo-switcher")
-var AppConfig = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath)) // init
+var AppConfigBasePath string
+var AppConfig *Config
 
 var ReposMap map[string]string
 var ReposName []string

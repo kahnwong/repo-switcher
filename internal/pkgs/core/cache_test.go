@@ -65,12 +65,17 @@ func TestHashPaths(t *testing.T) {
 }
 
 func TestWriteAndReadCache(t *testing.T) {
-	// Save original cache file path and restore after test
+	// Save original values and restore after test
 	originalCachePath := cacheFilePath
-	defer func() { cacheFilePath = originalCachePath }()
+	originalAppConfigBasePath := AppConfigBasePath
+	defer func() {
+		cacheFilePath = originalCachePath
+		AppConfigBasePath = originalAppConfigBasePath
+	}()
 
 	// Create temp directory for test
 	tempDir := t.TempDir()
+	AppConfigBasePath = tempDir
 	cacheFilePath = filepath.Join(tempDir, cacheFileName)
 
 	repos := []string{
@@ -118,7 +123,7 @@ func TestWriteAndReadCache(t *testing.T) {
 }
 
 func TestReadCacheNonExistent(t *testing.T) {
-	// Save original cache file path and restore after test
+	// Save original cacheFilePath and restore after test
 	originalCachePath := cacheFilePath
 	defer func() { cacheFilePath = originalCachePath }()
 
@@ -132,7 +137,7 @@ func TestReadCacheNonExistent(t *testing.T) {
 }
 
 func TestReadCacheInvalidJSON(t *testing.T) {
-	// Save original cache file path and restore after test
+	// Save original cacheFilePath and restore after test
 	originalCachePath := cacheFilePath
 	defer func() { cacheFilePath = originalCachePath }()
 
@@ -254,7 +259,7 @@ func TestWriteCacheCreatesDirectory(t *testing.T) {
 }
 
 func TestCacheJSONFormat(t *testing.T) {
-	// Save original cache file path and restore after test
+	// Save original cacheFilePath and restore after test
 	originalCachePath := cacheFilePath
 	defer func() { cacheFilePath = originalCachePath }()
 

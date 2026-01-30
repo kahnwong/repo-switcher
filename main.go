@@ -16,6 +16,6 @@ func init() {
 
 func main() {
 	if err := cmd.RootCmd.Execute(); err != nil {
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("command execution failed")
 	}
 }

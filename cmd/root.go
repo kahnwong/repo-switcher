@@ -12,9 +12,10 @@ var reposMap = core.ReposMap
 var reposName = core.ReposName
 
 var RootCmd = &cobra.Command{
-	Use:   "repo-switcher [repo-name]",
-	Short: "Switch to a git repository",
-	Args:  cobra.ExactArgs(1),
+	Use:          "repo-switcher [repo-name]",
+	Short:        "Switch to a git repository",
+	Args:         cobra.ExactArgs(1),
+	SilenceUsage: true,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return reposName, cobra.ShellCompDirectiveNoFileComp
 	},

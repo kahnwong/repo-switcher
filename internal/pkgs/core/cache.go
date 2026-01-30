@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,7 +22,7 @@ const (
 	cacheFileName = "repos-cache.json"
 )
 
-var cacheFilePath = filepath.Join(AppConfigBasePath, cacheFileName)
+var cacheFilePath string
 
 // hashPaths creates a hash of the paths to detect config changes
 func hashPaths(paths []string) string {

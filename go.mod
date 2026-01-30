@@ -3,7 +3,7 @@ module github.com/kahnwong/repo-switcher
 go 1.25.4
 
 require (
-	github.com/kahnwong/cli-base v0.0.0-20260101083643-0c950e574c26
+	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.2
 )

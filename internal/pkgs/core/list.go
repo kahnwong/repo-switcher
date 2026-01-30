@@ -13,7 +13,7 @@ func listGitRepos(paths []string) ([]string, error) {
 	var err error
 
 	for _, path := range paths {
-		gitDir := cli_base.ExpandHome(path)
+		gitDir, _ := cli_base.ExpandHome(path)
 
 		err = filepath.Walk(gitDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
