@@ -1,36 +1,15 @@
 package core
 
 import (
-	"path/filepath"
-
 	"fmt"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"os"
+	"path/filepath"
+	"strings"
 
 	cliBase "github.com/kahnwong/cli-base"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
-
-func init() {
-	// Set log level to info before any logging occurs
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
-	// Initialize config path
-	var err error
-	AppConfigBasePath, err = cliBase.ExpandHome("~/.config/repo-switcher")
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to expand config path")
-	}
-
-	// Initialize cache file path
-	cacheFilePath = filepath.Join(AppConfigBasePath, cacheFileName)
-
-	// Read config file
-	AppConfig, err = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath))
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to read config file")
-	}
-}
 
 type Config struct {
 	Paths []string `yaml:"paths"`
@@ -60,6 +39,37 @@ func getReposName(reposMap map[string]string) []string {
 }
 
 func init() {
+	// Set log level to info before any logging occurs
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	// Initialize config path
+	var err error
+	AppConfigBasePath, err = cliBase.ExpandHome("~/.config/repo-switcher")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to expand config path")
+	}
+
+	// Initialize cache file path
+	cacheFilePath = filepath.Join(AppConfigBasePath, cacheFileName)
+
+	// Read config file
+	AppConfig, err = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath))
+	if err != nil {
+		if isTestMode() {
+			log.Warn().Err(err).Msg("failed to read config file")
+			return
+		}
+		log.Fatal().Err(err).Msg("failed to read config file")
+	}
+
+	if AppConfig == nil {
+		if isTestMode() {
+			log.Warn().Msg("skipping repo initialization: config not loaded")
+			return
+		}
+		log.Fatal().Msg("config not loaded")
+	}
+
 	repos, err := listGitReposWithCache(AppConfig.Paths, false)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to list git repos")
@@ -79,4 +89,13 @@ func RefreshCache() error {
 	ReposMap = createGitFolderMap(repos)
 	ReposName = getReposName(ReposMap)
 	return nil
+}
+
+func isTestMode() bool {
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, "-test.") || strings.HasSuffix(arg, ".test") {
+			return true
+		}
+	}
+	return false
 }
