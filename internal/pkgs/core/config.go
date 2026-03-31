@@ -21,25 +21,8 @@ var AppConfig *Config
 var ReposMap map[string]string
 var ReposName []string
 
-func createGitFolderMap(repos []string) map[string]string {
-	folderMap := make(map[string]string)
-	for _, repo := range repos {
-		folderName := filepath.Base(repo)
-		folderMap[folderName] = repo
-	}
-	return folderMap
-}
-
-func getReposName(reposMap map[string]string) []string {
-	keys := make([]string, 0, len(reposMap))
-	for key := range reposMap {
-		keys = append(keys, key)
-	}
-	return keys
-}
-
 func init() {
-	// Set log level to info before any logging occurs
+	// Set log level
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	// Initialize config path
@@ -79,16 +62,21 @@ func init() {
 	ReposName = getReposName(ReposMap)
 }
 
-// RefreshCache forces a refresh of the repository cache
-func RefreshCache() error {
-	repos, err := listGitReposWithCache(AppConfig.Paths, true)
-	if err != nil {
-		return err
+func createGitFolderMap(repos []string) map[string]string {
+	folderMap := make(map[string]string)
+	for _, repo := range repos {
+		folderName := filepath.Base(repo)
+		folderMap[folderName] = repo
 	}
+	return folderMap
+}
 
-	ReposMap = createGitFolderMap(repos)
-	ReposName = getReposName(ReposMap)
-	return nil
+func getReposName(reposMap map[string]string) []string {
+	keys := make([]string, 0, len(reposMap))
+	for key := range reposMap {
+		keys = append(keys, key)
+	}
+	return keys
 }
 
 func isTestMode() bool {
@@ -98,4 +86,16 @@ func isTestMode() bool {
 		}
 	}
 	return false
+}
+
+// entrypoint - for force refresh
+func RefreshCache() error {
+	repos, err := listGitReposWithCache(AppConfig.Paths, true)
+	if err != nil {
+		return err
+	}
+
+	ReposMap = createGitFolderMap(repos)
+	ReposName = getReposName(ReposMap)
+	return nil
 }
