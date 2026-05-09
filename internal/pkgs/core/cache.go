@@ -4,11 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog/log"
 )
 
 type RepoCache struct {
@@ -71,14 +70,14 @@ func writeCache(repos []string, paths []string) error {
 func isCacheValid(cache *RepoCache, paths []string) bool {
 	// Check if cache is too old
 	if time.Since(cache.Timestamp) > cacheTTL {
-		log.Debug().Msg("cache expired")
+		slog.Debug("cache expired")
 		return false
 	}
 
 	// Check if paths have changed
 	currentHash := hashPaths(paths)
 	if cache.PathsHash != currentHash {
-		log.Debug().Msg("paths configuration changed")
+		slog.Debug("paths configuration changed")
 		return false
 	}
 
@@ -91,16 +90,16 @@ func listGitReposWithCache(paths []string, forceRefresh bool) ([]string, error) 
 	if !forceRefresh {
 		cache, err := readCache()
 		if err == nil && isCacheValid(cache, paths) {
-			log.Debug().Msg("using cached repository list")
+			slog.Debug("using cached repository list")
 			return cache.Repos, nil
 		}
 		if err != nil {
-			log.Debug().Err(err).Msg("failed to read cache")
+			slog.Debug("failed to read cache", "error", err)
 		}
 	}
 
 	// Cache miss or invalid - scan directories
-	log.Debug().Msg("scanning directories for git repositories")
+	slog.Debug("scanning directories for git repositories")
 	repos, err := listGitRepos(paths)
 	if err != nil {
 		return nil, err
@@ -108,7 +107,7 @@ func listGitReposWithCache(paths []string, forceRefresh bool) ([]string, error) 
 
 	// Write to cache
 	if err := writeCache(repos, paths); err != nil {
-		log.Warn().Err(err).Msg("failed to write cache")
+		slog.Warn("failed to write cache", "error", err)
 		// Don't fail if cache write fails, just continue
 	}
 

@@ -2,13 +2,14 @@ package core
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	cliBase "github.com/kahnwong/cli-base"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	slogzerolog "github.com/samber/slog-zerolog/v2"
 )
 
 type Config struct {
@@ -22,14 +23,16 @@ var ReposMap map[string]string
 var ReposName []string
 
 func init() {
-	// Set log level
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	output := zerolog.ConsoleWriter{Out: os.Stderr}
+	logger := zerolog.New(output).With().Timestamp().Logger()
+	slog.SetDefault(slog.New(slogzerolog.Option{Logger: &logger}.NewZerologHandler()))
 
 	// Initialize config path
 	var err error
 	AppConfigBasePath, err = cliBase.ExpandHome("~/.config/repo-switcher")
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to expand config path")
+		slog.Error("failed to expand config path", "error", err)
+		os.Exit(1)
 	}
 
 	// Initialize cache file path
@@ -39,23 +42,26 @@ func init() {
 	AppConfig, err = cliBase.ReadYaml[Config](fmt.Sprintf("%s/config.yaml", AppConfigBasePath))
 	if err != nil {
 		if isTestMode() {
-			log.Warn().Err(err).Msg("failed to read config file")
+			slog.Warn("failed to read config file", "error", err)
 			return
 		}
-		log.Fatal().Err(err).Msg("failed to read config file")
+		slog.Error("failed to read config file", "error", err)
+		os.Exit(1)
 	}
 
 	if AppConfig == nil {
 		if isTestMode() {
-			log.Warn().Msg("skipping repo initialization: config not loaded")
+			slog.Warn("skipping repo initialization: config not loaded")
 			return
 		}
-		log.Fatal().Msg("config not loaded")
+		slog.Error("config not loaded")
+		os.Exit(1)
 	}
 
 	repos, err := listGitReposWithCache(AppConfig.Paths, false)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to list git repos")
+		slog.Error("failed to list git repos", "error", err)
+		os.Exit(1)
 	}
 
 	ReposMap = createGitFolderMap(repos)
