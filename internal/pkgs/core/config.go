@@ -24,7 +24,7 @@ var ReposName []string
 
 func init() {
 	output := zerolog.ConsoleWriter{Out: os.Stderr}
-	logger := zerolog.New(output).With().Timestamp().Logger()
+	logger := zerolog.New(output).Level(zerolog.ErrorLevel).With().Timestamp().Logger()
 	slog.SetDefault(slog.New(slogzerolog.Option{Logger: &logger}.NewZerologHandler()))
 
 	// Initialize config path
