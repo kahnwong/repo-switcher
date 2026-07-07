@@ -1,6 +1,6 @@
 module github.com/kahnwong/repo-switcher
 
-go 1.26.3
+go 1.26.5
 
 require (
 	github.com/kahnwong/cli-base v0.0.0-20260130142944-47fb95a69ad9
